@@ -121,7 +121,7 @@ export async function resolveOptions(
   return { context, options: resolvedOptions };
 }
 
-function slash(str: string) {
+export function slash(str: string) {
   return str && str.replace(/\\/g, '/');
 }
 

@@ -24,6 +24,7 @@ import {
   generateViewEntry,
   mergeConfig,
   resolveOptions,
+  slash,
 } from './utils';
 import { isArray, isNil } from 'lodash';
 import { readFile, writeFile } from 'fs-extra';
@@ -111,7 +112,7 @@ export class Builder {
     const tempDir = this.getTempDir();
 
     const metaFiles = await glob('**/meta.{js,jsx,ts,tsx}', {
-      cwd: metaPath,
+      cwd: slash(metaPath),
       absolute: true,
       onlyFiles: true,
       ignore: ['node_modules'],
@@ -186,7 +187,7 @@ export class Builder {
     });
 
     const filePaths = await glob(['**/*.{ts,tsx,vue}', '!**/demos'], {
-      cwd: srcDir,
+      cwd: slash(srcDir),
       absolute: true,
       onlyFiles: true,
       ignore: ['node_modules'],
@@ -235,7 +236,7 @@ export class Builder {
     const { metaPath, library, outDir } = this.options;
 
     const metaFiles = await glob('**/meta.{js,jsx,ts,tsx}', {
-      cwd: metaPath,
+      cwd: slash(metaPath),
       absolute: true,
       onlyFiles: true,
       ignore: ['node_modules'],
@@ -301,7 +302,7 @@ export class Builder {
       .map((key) => new RegExp(`^${key}`));
 
     const inputFiles = await glob('./src/**/*.{ts,tsx,js,jsx.vue}', {
-      cwd: this.context,
+      cwd: slash(this.context),
       onlyFiles: true,
       absolute: true,
     });
