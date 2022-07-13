@@ -1,0 +1,25 @@
+{
+  "name": "@knxcloud/lowcode-engine-materials",
+  "scripts": {
+    "prepare": "pnpm -C builder build"
+  },
+  "dependencies": {
+    "@knxcloud/lowcode-builder": "workspace:*"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.4",
+    "@typescript-eslint/eslint-plugin": "^5.30.3",
+    "@typescript-eslint/parser": "^5.30.3",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/eslint-config-typescript": "^11.0.0",
+    "@vue/tsconfig": "^0.1.3",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.1.1",
+    "prettier": "^2.7.1",
+    "sucrase": "^3.23.0",
+    "typescript": "^4.7.4",
+    "vue": "^3.2.37"
+  }
+}

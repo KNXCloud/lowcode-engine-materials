@@ -1,0 +1,23 @@
+{
+  "name": "@knxcloud/lowcode-materials-antd",
+  "version": "0.0.0",
+  "main": "./lib/index.js",
+  "module": "./es/index.mjs",
+  "typings": "./es/index.d.ts",
+  "unpkg": "./dist/index.js",
+  "jsdelivr": "./dist/index.js",
+  "scripts": {
+    "start": "lowcode-builder start -l AntdLc",
+    "build": "lowcode-builder build -l AntdLc"
+  },
+  "dependencies": {
+    "ant-design-vue": "^3.2.9"
+  },
+  "devDependencies": {
+    "@alilc/lowcode-types": "^1.0.11",
+    "vue": "^3.2.37"
+  },
+  "peerDependencies": {
+    "vue": ">=3.2"
+  }
+}

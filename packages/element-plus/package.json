@@ -1,0 +1,23 @@
+{
+  "name": "@knxcloud/lowcode-materials-element-plus",
+  "version": "0.0.0",
+  "main": "./lib/index.js",
+  "module": "./es/index.mjs",
+  "typings": "./es/index.d.ts",
+  "unpkg": "./dist/index.js",
+  "jsdelivr": "./dist/index.js",
+  "scripts": {
+    "start": "lowcode-builder start -l ElementPlusLc",
+    "build": "lowcode-builder build -l ElementPlusLc"
+  },
+  "dependencies": {
+    "element-plus": "^2.2.8"
+  },
+  "devDependencies": {
+    "@alilc/lowcode-types": "^1.0.11",
+    "vue": "^3.2.37"
+  },
+  "peerDependencies": {
+    "vue": ">=3.2"
+  }
+}
