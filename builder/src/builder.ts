@@ -162,8 +162,8 @@ export class Builder {
 
     await Promise.all(
       files.getFiles().map(async ({ filePath, text }) => {
-        if (filePath.startsWith(srcDir)) {
-          const relPath = path.relative(srcDir, filePath);
+        const relPath = path.relative(srcDir, filePath);
+        if (!relPath.includes('..')) {
           const distPath = path.join(outDir, relPath);
           await writeFile(distPath, text);
         }

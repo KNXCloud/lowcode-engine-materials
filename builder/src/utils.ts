@@ -1,5 +1,5 @@
 import path, { join } from 'node:path';
-import { existsSync, stat, writeFile } from 'fs-extra';
+import { existsSync, stat, writeFile, mkdir } from 'fs-extra';
 import { isNil, isString, isFunction, isObject, isArray } from 'lodash';
 import type { Options, TargetFormat } from './interface';
 import type { RollupOptions } from 'rollup';
@@ -156,6 +156,10 @@ ${
 
   const metaEntryPath = join(dir, 'meta-entry.js');
 
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+
   await writeFile(metaEntryPath, code);
 
   return metaEntryPath;
@@ -166,6 +170,10 @@ export async function generateViewEntry(dir: string, file: string, globalName?: 
 
   const code = `import * as view from '${slash(file)}'
 window['${globalName}'] = Object.assign({ __esModule: true }, view)`;
+
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
 
   await writeFile(compEntryPath, code);
   return compEntryPath;
