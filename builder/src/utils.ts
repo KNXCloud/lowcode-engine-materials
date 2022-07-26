@@ -1,7 +1,8 @@
 import path, { join } from 'node:path';
 import { existsSync, stat, writeFile, mkdir } from 'fs-extra';
+import glob from 'fast-glob';
 import { isNil, isString, isFunction, isObject, isArray } from 'lodash';
-import type { Options, TargetFormat } from './interface';
+import type { LowCodeConfig, Options, TargetFormat } from './interface';
 import type { RollupOptions } from 'rollup';
 import deepmerge from 'deepmerge';
 
@@ -11,9 +12,26 @@ export async function resolveOptions(
   { config, ...options }: Record<string, unknown>
 ) {
   const context = path.resolve(process.cwd(), ctx);
+  const resolve = (...dirs: string[]) => path.resolve(context, ...dirs);
 
-  const configPath = path.resolve(context, isString(config) ? config : 'build.config.js');
-  if (existsSync(configPath)) {
+  let configPath: string;
+
+  if (config) {
+    configPath = resolve(isString(config) ? config : 'build.config.js');
+  } else {
+    const configPaths = await glob(
+      ['build.config.{js,cjs,json}', 'build.{js,cjs,json}'],
+      {
+        cwd: slash(context),
+        onlyFiles: true,
+        absolute: true,
+        ignore: ['node_modules'],
+      }
+    );
+    configPath = configPaths[0];
+  }
+
+  if (configPath && existsSync(configPath)) {
     const fileStat = await stat(configPath);
     if (!fileStat.isFile()) {
       throw new Error('配置文件必须是一个文件, path: ' + configPath);
@@ -24,7 +42,16 @@ export async function resolveOptions(
 
   const resolvedOptions = Object.assign({}, defaultOptions);
 
-  const resolve = (...dirs: string[]) => path.resolve(context, ...dirs);
+  const pkgPath = path.resolve('package.json');
+  if (!existsSync(pkgPath)) {
+    throw new Error('package.json not found at ' + pkgPath);
+  }
+  const pkg = require(pkgPath);
+  const originNpmInfo = resolvedOptions.lowcode.npmInfo;
+  resolvedOptions.lowcode.npmInfo = deepmerge(originNpmInfo, {
+    package: pkg.name,
+    version: pkg.version,
+  });
 
   function normalizeProp<K extends keyof Options>(propName: K): void;
   function normalizeProp<K extends keyof Options>(
@@ -92,9 +119,35 @@ export async function resolveOptions(
     throw new Error('library option is required');
   }
 
-  normalizeProp('metaPath', isString, (metaPath) => {
-    return resolve(metaPath);
-  });
+  normalizeProp(
+    'lowcode',
+    (val): val is Record<string, unknown> => isObject(val),
+    (lowcode, origin) => {
+      const merged = { ...origin };
+      const { metaDir, baseUrl, groups, npmInfo, categories, builtinAssets } = lowcode;
+      if (isString(metaDir)) {
+        merged.metaDir = resolve(metaDir);
+      }
+      if (isString(baseUrl)) {
+        merged.baseUrl = baseUrl;
+      } else if (isObject(baseUrl)) {
+        merged.baseUrl = baseUrl as Record<string, string>;
+      }
+      if (isArray(groups)) {
+        merged.groups = groups;
+      }
+      if (isArray(categories)) {
+        merged.categories = categories;
+      }
+      if (isObject(npmInfo)) {
+        merged.npmInfo = Object.assign({}, merged.npmInfo, npmInfo);
+      }
+      if (isObject(builtinAssets)) {
+        merged.builtinAssets = deepmerge(merged.builtinAssets, builtinAssets);
+      }
+      return merged;
+    }
+  );
 
   normalizeProp(
     'externals',
@@ -135,6 +188,7 @@ export function mergeConfig(
 export async function generateMetaEntry(
   dir: string,
   files: string[],
+  npmInfo: Record<string, unknown>,
   globalName?: string
 ): Promise<string> {
   const imports = files.reduce((res, file, idx) => {
@@ -147,7 +201,21 @@ export async function generateMetaEntry(
     .join('\n');
 
   const code = `${importCode}
+const npmInfo = ${JSON.stringify(npmInfo)};
 const components = [${Object.keys(imports).join(',')}];
+components.forEach((item) => {
+  if (!item.npm) {
+    item.npm = {
+      ...npmInfo,
+      componentName: item.componentName,
+    }
+  } else {
+    item.npm = {
+      ...npmInfo,
+      ...item.npm,
+    }
+  }
+})
 ${
   !globalName
     ? 'export { components }'
@@ -177,4 +245,22 @@ window['${globalName}'] = Object.assign({ __esModule: true }, view)`;
 
   await writeFile(compEntryPath, code);
   return compEntryPath;
+}
+
+export async function generateAssetCode(config: LowCodeConfig) {
+  const assets: Record<string, unknown> = {};
+  Object.assign(assets, config.builtinAssets);
+
+  let components = assets.components as unknown[];
+  if (!isArray(components)) {
+    components = assets.components = [];
+  }
+  components.push({
+    exportName: 'KnxMduiMeta',
+    npm: {
+      package: '@knx/mdui',
+      version: '1.0.0',
+    },
+    url: 'http://localhost:3333/meta.js',
+  });
 }

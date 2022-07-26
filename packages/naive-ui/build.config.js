@@ -1,8 +1,8 @@
 module.exports = {
   library: 'NavieLc',
   externals: {
-    vue: 'Vue',
-    'naive-ui': 'naive',
+    vue: 'var window.Vue',
+    'naive-ui': 'var window.naive',
   },
   builtinAssets: {},
 };

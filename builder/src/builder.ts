@@ -1,4 +1,4 @@
-import type { OutputOptions, RollupOptions } from 'rollup';
+import type { OutputOptions, Plugin, RollupOptions } from 'rollup';
 import type { Command } from 'commander';
 import type { CommandAction, Options, TargetFormat } from './interface';
 
@@ -33,12 +33,37 @@ export class Builder {
   public context = process.cwd();
   public command: CommandAction = null;
   public options: Options = {
-    metaPath: path.resolve('lowcode'),
     library: '',
     outDir: this.context,
     format: ['cjs', 'esm', 'umd'],
     externals: {
       vue: 'Vue',
+    },
+    lowcode: {
+      metaDir: path.resolve('lowcode'),
+      baseUrl: 'https://unpkg.com/{name}@{version}',
+      groups: ['精选组件', '院子组件'],
+      categories: [
+        '基础元素',
+        '布局容器类',
+        '表格类',
+        '表单详情类',
+        '帮助类',
+        '对话框类',
+        '业务类',
+        '通用',
+        '引导',
+        '信息输入',
+        '信息展示',
+        '信息反馈',
+      ],
+      npmInfo: {
+        destructuring: true,
+      },
+      builtinAssets: {
+        packages: [],
+        components: [],
+      },
     },
   };
 
@@ -107,12 +132,13 @@ export class Builder {
   }
 
   private async start() {
-    const { library, metaPath, externals } = this.options;
+    const { library, lowcode, externals } = this.options;
+    const { metaDir, npmInfo } = lowcode;
 
     const tempDir = this.getTempDir();
 
     const metaFiles = await glob('**/meta.{js,jsx,ts,tsx}', {
-      cwd: slash(metaPath),
+      cwd: slash(metaDir),
       absolute: true,
       onlyFiles: true,
       ignore: ['node_modules'],
@@ -123,14 +149,32 @@ export class Builder {
     const iife = require('rollup-plugin-iife');
     const dev = require('rollup-plugin-dev');
 
+    const devPlugin: Plugin = {
+      name: 'lowcode-dev-plugin',
+      buildEnd(err) {
+        if (err) return;
+
+        const hasStyle = Array.from(this.getModuleIds()).some((id) => {
+          return id.match(/\.(?:css|less|scss)/);
+        });
+        void hasStyle;
+
+        // this.emitFile({
+        //   type: 'asset',
+        //   fileName: 'assets.json',
+        //   source: `{ "name": "aaa${c++}" }`,
+        // });
+      },
+    };
+
     const config = mergeConfig(
-      getBaseRollupConfig(false),
+      this.getBaseRollupConfig(),
       defineConfig({
         input: {
           index: await generateViewEntry(tempDir, this.resolve('src/index.ts'), library),
-          meta: await generateMetaEntry(tempDir, metaFiles, `${library}Meta`),
+          meta: await generateMetaEntry(tempDir, metaFiles, npmInfo, `${library}Meta`),
         },
-        plugins: [dev(distDir), iife({ sourcemap: true })],
+        plugins: [devPlugin, dev(distDir), iife({ sourcemap: true })],
         external: Object.keys(externals).map((e) => new RegExp(`^${e}`)),
         treeshake: true,
         output: {
@@ -233,17 +277,18 @@ export class Builder {
   }
 
   private async getMetaRollupConfig() {
-    const { metaPath, library, outDir } = this.options;
+    const { lowcode, library, outDir } = this.options;
+    const { metaDir, npmInfo } = lowcode;
 
     const metaFiles = await glob('**/meta.{js,jsx,ts,tsx}', {
-      cwd: slash(metaPath),
+      cwd: slash(metaDir),
       absolute: true,
       onlyFiles: true,
       ignore: ['node_modules'],
     });
 
     const baseUmdOptions = defineConfig({
-      input: await generateMetaEntry(this.getTempDir(), metaFiles),
+      input: await generateMetaEntry(this.getTempDir(), metaFiles, npmInfo),
       plugins: [terser()],
       output: {
         file: path.join(outDir, `dist/meta.js`),
@@ -251,7 +296,7 @@ export class Builder {
         format: 'umd',
       },
     });
-    return mergeConfig(getBaseRollupConfig(true), baseUmdOptions);
+    return mergeConfig(this.getBaseRollupConfig(), baseUmdOptions);
   }
 
   private getUmdRollupConfig() {
@@ -259,6 +304,7 @@ export class Builder {
     const baseUmdOptions = defineConfig({
       input: this.resolve('src/index.ts'),
       external: Object.keys(externals).map((e) => new RegExp(`^${e}`)),
+      treeshake: true,
       output: {
         name: library,
         format: 'umd',
@@ -267,7 +313,7 @@ export class Builder {
     });
     return [
       mergeConfig(
-        getBaseRollupConfig(false),
+        this.getBaseRollupConfig(false),
         baseUmdOptions,
         defineConfig({
           output: {
@@ -276,7 +322,7 @@ export class Builder {
         })
       ),
       mergeConfig(
-        getBaseRollupConfig(true),
+        this.getBaseRollupConfig(true),
         baseUmdOptions,
         defineConfig({
           plugins: [terser()],
@@ -308,7 +354,7 @@ export class Builder {
     });
 
     const config = deepMerge(
-      getBaseRollupConfig(true),
+      this.getBaseRollupConfig(),
       defineConfig({
         input: inputFiles,
         external: externals,
@@ -338,36 +384,36 @@ export class Builder {
     }
     return config;
   }
-}
 
-export function getBaseRollupConfig(isProd: boolean) {
-  const extensions = ['.mjs', '.js', '.json', '.ts'];
-  return defineConfig({
-    plugins: [
-      vueDefineOptions(),
-      vue({ isProduction: isProd }),
-      vueJsx(),
-      nodeResolve({ extensions }),
-      commonjs(),
-      esbuild({
-        sourceMap: true,
-        target: 'es2018',
-        loaders: {
-          '.vue': 'ts',
-        },
-      }),
-      babel({
-        extensions,
-        babelHelpers: 'bundled',
-      }),
-      replace({
-        values: {
-          __VUE_OPTIONS_API__: JSON.stringify(true),
-          __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
-          'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
-        },
-        preventAssignment: true,
-      }),
-    ],
-  });
+  getBaseRollupConfig(isProd = this.command === 'build') {
+    const extensions = ['.mjs', '.js', '.json', '.ts'];
+    return defineConfig({
+      plugins: [
+        vueDefineOptions(),
+        vue({ isProduction: isProd }),
+        vueJsx(),
+        nodeResolve({ extensions }),
+        commonjs(),
+        esbuild({
+          sourceMap: true,
+          target: 'es2018',
+          loaders: {
+            '.vue': 'ts',
+          },
+        }),
+        babel({
+          extensions,
+          babelHelpers: 'bundled',
+        }),
+        replace({
+          values: {
+            __VUE_OPTIONS_API__: JSON.stringify(true),
+            __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
+            'process.env.NODE_ENV': JSON.stringify(isProd ? 'production' : 'development'),
+          },
+          preventAssignment: true,
+        }),
+      ],
+    });
+  }
 }
