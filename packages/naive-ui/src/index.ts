@@ -1,2 +1,2 @@
-export { NCard } from 'naive-ui';
-export { NAvatar } from 'naive-ui';
+export * from './avatar';
+export * from './card';

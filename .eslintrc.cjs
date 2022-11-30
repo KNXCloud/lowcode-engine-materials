@@ -1,46 +1,32 @@
+/* eslint-env node */
 require('@rushstack/eslint-patch/modern-module-resolution');
+
+const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
   root: true,
-  overrides: [
-    {
-      files: ['./builder/**', './packages/**/*.js'],
-      env: {
-        es6: true,
-        node: true,
-      },
-      parserOptions: {
-        ecmaVersion: 2020,
-      },
-      extends: [
-        'eslint:recommended',
-        'plugin:prettier/recommended',
-        'plugin:@typescript-eslint/recommended',
-      ],
-      rules: {
-        '@typescript-eslint/no-var-requires': 'off',
-      },
-    },
-    {
-      files: ['./packages/**/*.{ts,tsx,vue}'],
-      env: {
-        browser: true,
-        'vue/setup-compiler-macros': true,
-      },
-      extends: [
-        'plugin:vue/vue3-recommended',
-        'eslint:recommended',
-        '@vue/typescript/recommended',
-        'plugin:prettier/recommended',
-      ],
-      rules: {
-        'vue/prop-name-casing': 'off',
-        'vue/one-component-per-file': 'off',
-        'vue/multi-word-component-names': 'off',
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-non-null-assertion': 'off',
-      },
-    },
+  extends: [
+    'plugin:vue/vue3-essential',
+    'eslint:recommended',
+    '@vue/typescript/recommended',
+    'plugin:prettier/recommended',
   ],
+  parserOptions: {
+    ecmaVersion: 2020,
+  },
+  rules: {
+    eqeqeq: ['error', 'always', { null: 'ignore' }],
+    'no-debugger': isProd ? 'error' : 'off',
+    'vue/multi-word-component-names': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-unused-vars': isProd ? 'error' : 'warn',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/ban-types': [
+      'error',
+      { types: { '{}': false }, extendDefaults: true },
+    ],
+  },
 };

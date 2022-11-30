@@ -1,26 +1,31 @@
 {
   "name": "@knxcloud/lowcode-materials-naive",
-  "version": "0.0.0",
-  "main": "./lib/index.js",
-  "module": "./es/index.mjs",
-  "typings": "./es/index.d.ts",
-  "unpkg": "./dist/index.js",
-  "jsdelivr": "./dist/index.js",
+  "version": "0.0.1",
+  "main": "./dist/index.min.js",
+  "module": "./dist/lowcode-materials-naive.mjs",
+  "typings": "./dist/lowcode-materials-naive.d.ts",
   "scripts": {
-    "start": "lowcode-builder start",
-    "build": "lowcode-builder build"
+    "start": "vue-cli-service lowcode:dev",
+    "build": "vue-cli-service lowcode:build && vite build",
+    "prepack": "pnpm build"
   },
   "dependencies": {
-    "naive-ui": "^2.30.8"
+    "naive-ui": "^2.34.2"
   },
   "devDependencies": {
-    "@alilc/lowcode-types": "^1.0.11",
-    "@babel/core": "^7.18.6",
-    "@babel/preset-env": "^7.18.6",
-    "@knxcloud/lowcode-builder": "workspace:*",
-    "vue": "^3.2.37"
+    "@alilc/lowcode-types": "^1.0.16",
+    "@knxcloud/vue-cli-plugin-lowcode": "^1.0.0",
+    "@vitejs/plugin-vue": "^3.2.0",
+    "@vitejs/plugin-vue-jsx": "^2.1.1",
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-plugin-typescript": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "vite": "^3.2.4",
+    "vite-plugin-lib-types": "^0.0.5",
+    "vue": "^3.2.45"
   },
   "peerDependencies": {
-    "vue": ">=3.2"
+    "vue": "^3.2.0"
   }
 }

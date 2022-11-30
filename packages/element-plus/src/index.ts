@@ -1,2 +1,2 @@
-export { ElAvatar } from 'element-plus';
-export { ElCard } from 'element-plus';
+export * from './avatar';
+export * from './card';
