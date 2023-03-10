@@ -10,20 +10,22 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "naive-ui": "^2.34.2"
+    "naive-ui": "^2.34.3"
   },
   "devDependencies": {
-    "@alilc/lowcode-types": "^1.0.16",
-    "@knxcloud/vue-cli-plugin-lowcode": "^1.0.0",
+    "@alilc/lowcode-types": "^1.1.3",
+    "@babel/core": "^7.21.0",
+    "@knxcloud/vue-cli-plugin-lowcode": "^1.0.1",
     "@vitejs/plugin-vue": "^3.2.0",
     "@vitejs/plugin-vue-jsx": "^2.1.1",
     "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-plugin-eslint": "^5.0.8",
     "@vue/cli-plugin-typescript": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
-    "vite": "^3.2.4",
-    "vite-plugin-lib-types": "^0.0.5",
-    "vue": "^3.2.45"
+    "typescript": "^4.9.5",
+    "vite": "^3.2.5",
+    "vite-plugin-lib-types": "^0.1.1",
+    "vue": "^3.2.47",
+    "webpack": "^5.76.0"
   },
   "peerDependencies": {
     "vue": "^3.2.0"
