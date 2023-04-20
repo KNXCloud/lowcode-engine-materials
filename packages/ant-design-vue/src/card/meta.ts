@@ -2,6 +2,7 @@ import type { IPublicTypeComponentMetadata } from '@alilc/lowcode-types';
 import cardImage from './__screenshots__/card-1.png?inline';
 
 const meta: IPublicTypeComponentMetadata = {
+  group: 'Antd',
   componentName: 'ACard',
   title: '卡片',
   category: '数据展示',

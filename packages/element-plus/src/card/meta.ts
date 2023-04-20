@@ -1,6 +1,6 @@
-import type { ComponentMetadata } from '@alilc/lowcode-types';
+import type { IPublicTypeComponentMetadata } from '@alilc/lowcode-types';
 
-const meta: ComponentMetadata = {
+const meta: IPublicTypeComponentMetadata = {
   componentName: 'ElCard',
 };
 

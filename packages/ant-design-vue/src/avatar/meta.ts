@@ -2,6 +2,7 @@ import type { IPublicTypeComponentMetadata } from '@alilc/lowcode-types';
 import avatarImage from './__screenshots__/avatar-1.jpg?inline';
 
 const meta: IPublicTypeComponentMetadata = {
+  group: 'Antd',
   componentName: 'AAvatar',
   title: '头像',
   category: '数据展示',
